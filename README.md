@@ -26,8 +26,8 @@ A complete Flutter mobile application for managing Pokémon trading cards with l
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/AbishekBasnet/pokemon_game.git
-   cd pokemon_game
+   git clone https://github.com/AbishekBasnet/pokemon_gameL4.git
+   cd pokemon_gameL4
    ```
 
 2. **Install dependencies**
@@ -218,7 +218,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Abishek Basnet**
 - GitHub: [@AbishekBasnet](https://github.com/AbishekBasnet)
-- Project: [Pokemon Trading Cards App](https://github.com/AbishekBasnet/pokemon_game)
+- Project: [Pokemon Trading Cards App](https://github.com/AbishekBasnet/pokemon_gameL4)
 
 ---
 
