@@ -2,6 +2,8 @@
 Pokémon Trading Cards Mobile App
 
 A complete Flutter mobile application for managing Pokémon trading cards with local storage and beautiful Material Design UI.
+Built with assistance from GitHub Copilot 
+Copilot helped generate boilerplate code, API logic, and UI components during development.
 
 ##  Features
 
