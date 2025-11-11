@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'db_helper.dart';
 import 'services/api_service.dart';
 import 'card_detail_screen.dart';
+import 'battle_screen.dart';
 
 void main() {
   runApp(const PokemonCardApp());
@@ -52,30 +53,40 @@ class _PokemonCardListState extends State<PokemonCardList> {
     });
 
     try {
+      print('🔄 Starting card loading process...');
+      
       // Check if database is empty
       bool isEmpty = await apiService.isDatabaseEmpty();
+      print('📊 Database empty: $isEmpty');
       
       if (isEmpty) {
+        print('🌐 Fetching cards from API...');
         // Fetch cards from API if database is empty
         bool success = await apiService.fetchAndStoreCards();
+        print('✅ API fetch success: $success');
+        
         if (!success) {
-          setState(() {
-            hasError = true;
-            errorMessage = 'Failed to fetch cards from API';
-            isLoading = false;
-          });
-          return;
+          print('❌ API fetch failed, but continuing to check database...');
+          // Don't return here, still check if fallback data was loaded
         }
       }
 
       // Load cards from database
+      print('💾 Loading cards from database...');
       List<PokemonCard> loadedCards = await apiService.getCardsFromDatabase();
+      print('📦 Loaded ${loadedCards.length} cards from database');
       
       setState(() {
         cards = loadedCards;
         isLoading = false;
+        // Only show error if we truly have no cards
+        if (loadedCards.isEmpty) {
+          hasError = true;
+          errorMessage = 'No Pokemon cards available';
+        }
       });
     } catch (e) {
+      print('💥 Error in _loadCards: $e');
       setState(() {
         hasError = true;
         errorMessage = 'Error loading cards: $e';
@@ -106,12 +117,50 @@ class _PokemonCardListState extends State<PokemonCardList> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BattleScreen(),
+                ),
+              );
+            },
+            tooltip: 'Battle History',
+          ),
+          IconButton(
+            icon: const Icon(Icons.sports_mma),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BattleScreen(),
+                ),
+              );
+            },
+            tooltip: 'Battle Arena',
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: isLoading ? null : _refreshCards,
           ),
         ],
       ),
       body: _buildBody(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const BattleScreen(),
+            ),
+          );
+        },
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        tooltip: 'Battle Arena',
+        child: const Icon(Icons.sports_mma, size: 28),
+      ),
     );
   }
 
@@ -237,7 +286,7 @@ class _PokemonCardListState extends State<PokemonCardList> {
                 ),
               ),
               subtitle: Text(
-                'ID: ${card.id}',
+                'HP: ${card.hp} • ID: ${card.id}',
                 style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 12,

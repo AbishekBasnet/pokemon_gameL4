@@ -6,12 +6,14 @@ class PokemonCard {
   final String name;
   final String imageSmall;
   final String imageLarge;
+  final int hp;
 
   PokemonCard({
     required this.id,
     required this.name,
     required this.imageSmall,
     required this.imageLarge,
+    required this.hp,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class PokemonCard {
       'name': name,
       'imageSmall': imageSmall,
       'imageLarge': imageLarge,
+      'hp': hp,
     };
   }
 
@@ -29,6 +32,7 @@ class PokemonCard {
       name: map['name'] ?? '',
       imageSmall: map['imageSmall'] ?? '',
       imageLarge: map['imageLarge'] ?? '',
+      hp: map['hp'] ?? 50,
     );
   }
 
@@ -38,9 +42,47 @@ class PokemonCard {
       PokemonCard.fromMap(json.decode(source));
 }
 
+class BattleHistory {
+  final String id;
+  final PokemonCard winner;
+  final PokemonCard loser;
+  final DateTime battleDate;
+
+  BattleHistory({
+    required this.id,
+    required this.winner,
+    required this.loser,
+    required this.battleDate,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'winner': winner.toMap(),
+      'loser': loser.toMap(),
+      'battleDate': battleDate.toIso8601String(),
+    };
+  }
+
+  factory BattleHistory.fromMap(Map<String, dynamic> map) {
+    return BattleHistory(
+      id: map['id'] ?? '',
+      winner: PokemonCard.fromMap(map['winner'] ?? {}),
+      loser: PokemonCard.fromMap(map['loser'] ?? {}),
+      battleDate: DateTime.parse(map['battleDate'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory BattleHistory.fromJson(String source) => 
+      BattleHistory.fromMap(json.decode(source));
+}
+
 class DatabaseHelper {
   static DatabaseHelper? _instance;
   static const String _cardsKey = 'pokemon_cards';
+  static const String _battleHistoryKey = 'battle_history';
 
   DatabaseHelper._internal();
 
@@ -91,5 +133,34 @@ class DatabaseHelper {
 
   Future<void> close() async {
     // No cleanup needed for SharedPreferences
+  }
+
+  // Battle History methods
+  Future<void> saveBattleHistory(BattleHistory battle) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+    // Get existing battles
+    List<BattleHistory> battles = await getAllBattleHistory();
+    
+    // Add new battle
+    battles.add(battle);
+    
+    // Save back to preferences
+    List<String> battlesJson = battles.map((battle) => battle.toJson()).toList();
+    await prefs.setStringList(_battleHistoryKey, battlesJson);
+  }
+
+  Future<List<BattleHistory>> getAllBattleHistory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? battlesJson = prefs.getStringList(_battleHistoryKey);
+    
+    if (battlesJson == null) return [];
+    
+    return battlesJson.map((battleJson) => BattleHistory.fromJson(battleJson)).toList();
+  }
+
+  Future<void> clearBattleHistory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_battleHistoryKey);
   }
 }
